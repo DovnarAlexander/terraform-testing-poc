@@ -7,3 +7,10 @@
 
 # .tfvars files
 *.tfvars
+
+# plans in files
+*.out
+*.out.json
+
+# Ignore security TF code
+security/**

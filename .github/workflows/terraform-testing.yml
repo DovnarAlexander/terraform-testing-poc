@@ -1,0 +1,51 @@
+name: Terraform test
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Dependencies
+      run: |
+        echo "System deps installation"
+        sudo apt-get install unzip wget tar python3-pip python3-setuptools python3-dev -y
+        echo "Terraform installation"
+        wget https://releases.hashicorp.com/terraform/0.12.16/terraform_0.12.16_linux_amd64.zip
+        unzip terraform_0.12.16_linux_amd64.zip
+        sudo chmod 755 terraform
+        sudo mv terraform /usr/local/bin/
+        terraform -version
+        echo "TFLint installation"
+        wget https://github.com/terraform-linters/tflint/releases/download/v0.13.1/tflint_linux_amd64.zip
+        unzip tflint_linux_amd64.zip
+        sudo chmod 755 tflint
+        sudo mv tflint /usr/local/bin/
+        tflint -v
+        echo "TFSec installation"
+        wget https://github.com/liamg/tfsec/releases/download/v0.12.2/tfsec-linux-amd64
+        sudo chmod 755 tfsec-linux-amd64
+        sudo mv tfsec-linux-amd64 /usr/local/bin/tfsec
+        tfsec --version
+        echo "Terraform compliance installation"
+        pip3 install wheel terraform-compliance --user
+        export PATH=$PATH:/home/runner/.local/bin
+        terraform-compliance --version
+
+    - name: Basic TF checks
+      run: |
+        terraform init -backend=False
+        terraform fmt -check -diff -recursive
+        terraform validate
+
+    - name: Terraform lint
+      run: TFLINT_LOG=debug tflint
+
+    - name: Terraform security scan (TFSec)
+      run: tfsec 
+
+    - name: Terraform security tests (Compliance)
+      run: |
+        terraform plan -out compliance.out
+        terraform-compliance --planfile compliance.out --features compliance/
