@@ -103,9 +103,9 @@ resource "aws_elb" "web" {
   listener {
     instance_port     = 80
     instance_protocol = "http"
-    # TODO: Replace wiht HTTPS
-    lb_port     = 80
-    lb_protocol = "http"
+    lb_port     = 443
+    lb_protocol = "https"
+    ssl_certificate_id = data.aws_acm_certificate.poc.arn
   }
 
   health_check {
@@ -128,6 +128,6 @@ resource "aws_elb" "web" {
 resource "aws_lb_cookie_stickiness_policy" "web" {
   name                     = "stickiness"
   load_balancer            = aws_elb.web.id
-  lb_port                  = 80
+  lb_port                  = 443
   cookie_expiration_period = 600
 }

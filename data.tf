@@ -29,3 +29,7 @@ data "aws_ami" "ubuntu" {
 
   owners = ["099720109477"] # Canonical
 }
+
+data "aws_acm_certificate" "poc" {
+  domain   = "*.lab.epam.com"
+}
